@@ -1,0 +1,18 @@
+<?xml version='1.0'?>
+<!DOCTYPE platform SYSTEM "http://simgrid.gforge.inria.fr/simgrid/simgrid.dtd">
+<platform version="4.1">
+  <zone id="AS0" routing="Full">
+    <!-- Cluster of 3 nodes, 4 cores each -->
+    <host id="node-0" speed="100Mf" core="4"/>
+    <host id="node-1" speed="100Mf" core="4"/>
+    <host id="node-2" speed="100Mf" core="4"/>
+
+    <link id="link-0" bandwidth="125MBps" latency="100us"/>
+    <link id="link-1" bandwidth="125MBps" latency="100us"/>
+    <link id="link-2" bandwidth="125MBps" latency="100us"/>
+
+    <route src="node-0" dst="node-1"><link_ctn id="link-0"/><link_ctn id="link-1"/></route>
+    <route src="node-1" dst="node-2"><link_ctn id="link-1"/><link_ctn id="link-2"/></route>
+    <route src="node-0" dst="node-2"><link_ctn id="link-0"/><link_ctn id="link-2"/></route>
+  </zone>
+</platform>
