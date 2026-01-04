@@ -53,25 +53,25 @@ def main():
     
     if rank == 0:
         full_data = utils.generate_data(N)
-        print(f"Rank 0: Generated data: {full_data}")
+        print("Rank 0: Generated data: {}".format(full_data))
         chunks = np.array_split(full_data, size)
     else:
         chunks = None
         
     local_data = comm.scatter(chunks, root=0)
-    print(f"Rank {rank}: Received chunk {local_data}")
+    print("Rank {}: Received chunk {}".format(rank, local_data))
     
     result_local = prefix_mpi(local_data, comm)
-    print(f"Rank {rank}: Local prefix result (adjusted) {result_local}")
+    print("Rank {}: Local prefix result (adjusted) {}".format(rank, result_local))
     
     final_result = comm.gather(result_local, root=0)
     
     if rank == 0:
         final_flat = np.concatenate(final_result)
-        print(f"Final Parallel Result: {final_flat}")
+        print("Final Parallel Result: {}".format(final_flat))
         
         is_correct = utils.verify_prefix_sum(full_data, final_flat)
-        print(f"Verification: {'SUCCESS' if is_correct else 'FAILURE'}")
+        print("Verification: {}".format('SUCCESS' if is_correct else 'FAILURE'))
 
 if __name__ == "__main__":
     main()

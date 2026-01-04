@@ -28,7 +28,6 @@ jobs:
         pip install mpi4py numpy
 
     - name: Run Tests
-      # Assuming we will create a run_tests.sh or similar
       run: |
         if [ -f run_tests.sh ]; then
           chmod +x run_tests.sh

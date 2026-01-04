@@ -24,17 +24,17 @@ def run_benchmark():
     sizes = [1000, 10000, 100000, 1000000]
     
     if rank == 0:
-        print(f"{'Structure':<15} | {'Size':<10} | {'Processes':<10} | {'Seq Time (s)':<15} | {'Par Time (s)':<15}")
+        print("{:<15} | {:<10} | {:<10} | {:<15} | {:<15}".format('Structure', 'Size', 'Processes', 'Seq Time (s)', 'Par Time (s)'))
         print("-" * 80)
         
     for N in sizes:
-        local_vec = np.random.randint(0, 10, N // size if N >= size else N).astype(np.int32)
         full_data = None
         if rank == 0:
             full_data = np.random.randint(0, 10, N).astype(np.int32)
             
         comm.Barrier()
         
+        # Sequential timing
         seq_time = 0.0
         if rank == 0:
             start = MPI.Wtime()
@@ -43,20 +43,24 @@ def run_benchmark():
             seq_time = end - start
             
         comm.Barrier()
+        
+        # Parallel timing
         start_par = MPI.Wtime()
         
-        recvbuf = np.zeros(1, dtype=np.int32) if rank == 0 else None
-        
+        # In a standard MPI_Reduce benchmark, each rank has an array of size N
+        # and we perform element-wise reduction.
         local_arr = np.random.randint(0, 10, N).astype(np.int32)
         recv_arr = np.zeros(N, dtype=np.int32) if rank == 0 else None
         
         manual_reduce(local_arr, recv_arr, op=MPI.SUM, root=0, comm=comm)
         
+        comm.Barrier()
         end_par = MPI.Wtime()
+        
         par_time = end_par - start_par
         
         if rank == 0:
-            print(f"{'Tree-Reduce':<15} | {N:<10} | {size:<10} | {seq_time:.6f}          | {par_time:.6f}")
+            print("{:<15} | {:<10} | {:<10} | {:.6f}          | {:.6f}".format('Tree-Reduce', N, size, seq_time, par_time))
 
 if __name__ == "__main__":
     run_benchmark()

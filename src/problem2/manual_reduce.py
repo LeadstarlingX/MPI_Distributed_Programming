@@ -60,8 +60,10 @@ def main():
     if rank == 0:
         if np.array_equal(std_result, manual_result):
             print("Rank 0: Manual Tree Reduce SUCCESS")
-            print(f"Result: {manual_result[:5]}...")
+            print("Result: {}...".format(manual_result[:5]))
         else:
             print("Rank 0: Manual Tree Reduce FAILURE")
-            print(f"Std: {std_result}")
-            print(f"Man: {manual_result}")
+            print("Std: {}".format(std_result))
+            print("Man: {}".format(manual_result))
+
+main()
