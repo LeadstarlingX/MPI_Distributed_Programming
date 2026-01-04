@@ -1,3 +1,7 @@
+"""
+Common Utilities
+Helper functions for data generation and verification shared across problems.
+"""
 def generate_data(size):
     import numpy as np
     return np.random.randint(0, 11, size)

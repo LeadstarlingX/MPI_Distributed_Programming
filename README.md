@@ -1,33 +1,85 @@
-# MPI Distributed Programming Assignment
+# MPI Distributed Programming Project
 
-Implementation of Prefix Sum and Tree-based Reduce using mpi4py.
+This repository contains solutions for the Distributed Programming assignment using `mpi4py`. It implements a parallel prefix sum algorithm and a custom tree-based reduction, along with performance benchmarking.
 
-## Requirements
-- Python 3
-- mpi4py
-- OpenMPI (System installed)
+## 📂 Project Structure
 
-## Usage
+- **`src/problem1/`**: Contains `prefix_sum.py` (Parallel Prefix Sum implementation).
+- **`src/problem2/`**: Contains `manual_reduce.py` (Tree-based Reduce) and `benchmark.py` (Performance comparison).
+- **`src/common/`**: Shared utility functions for data generation and verification.
+- **`simgrid/`**: XML configuration files for SimGrid simulations.
+- **`Makefile`**: Shortcuts for running tests and benchmarks.
 
-### 1. Parallel Prefix Sum (Problem 1)
+## 🚀 How to Run
+
+### Prerequisites
+- Python 3.x
+- MPI implementation (OpenMPI, MPICH)
+- `mpi4py` library (`pip install mpi4py`)
+- `numpy` library (`pip install numpy`)
+
+### Using Make (Recommended)
+
+Run Problem 1 (Prefix Sum):
 ```bash
-mpiexec -n <NP> python3 src/problem1/prefix_sum.py
+make p1
 ```
 
-### 2. Manual Tree Reduce & Benchmark (Problem 2)
+Run Problem 2 (Benchmark):
 ```bash
-mpiexec -n <NP> python3 src/problem2/benchmark.py
+make p2
 ```
 
-### 3. SimGrid Simulation
-SimGrid configurations are provided in `simgrid/`. 
-To run with SimGrid (if SMPI/Python bindings are configured):
+Run Both:
 ```bash
-smpirun -platform simgrid/platform.xml -hostfile ... python3 src/problem2/benchmark.py
+make all
 ```
 
-## Running Tests
-Execute the helper script:
+Change number of processes (e.g., to 8):
 ```bash
-bash run_tests.sh
+make p1 NP=8
 ```
+
+### Manual Execution
+
+**Problem 1:**
+```bash
+mpiexec -n 4 python3 src/problem1/prefix_sum.py
+```
+
+**Problem 2:**
+```bash
+mpiexec -n 4 python3 src/problem2/benchmark.py
+```
+
+## 🧪 Testing on University Server (CentOS 7.7)
+
+1.  **Connect to the Cluster**:
+    Use MobaXterm or your terminal to SSH into the head node.
+    ```bash
+    ssh username@cluster-address
+    ```
+
+2.  **Clone the Repository**:
+    ```bash
+    git clone git@github.com:LeadstarlingX/MPI_Distributed_Programming.git
+    cd MPI_Distributed_Programming
+    ```
+
+3.  **Load Environment (If required)**:
+    Some university clusters require loading modules. Check if you need to run:
+    ```bash
+    module load mpi/openmpi-x.x
+    module load python/3.x
+    ```
+
+4.  **Install/Check Dependencies**:
+    Ensure `mpi4py` is installed in your user environment:
+    ```bash
+    pip3 install --user mpi4py numpy
+    ```
+
+5.  **Run**:
+    ```bash
+    make all
+    ```
