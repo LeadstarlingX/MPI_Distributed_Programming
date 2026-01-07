@@ -4,6 +4,26 @@ This project contains a dual-layer implementation of distributed algorithms, com
 
 ---
 
+## 📂 Project Structure
+
+```bash
+.
+├── Makefile                # Multi-language build/run system
+├── platforms/              # SimGrid Topology Definitions (XML)
+│   ├── crossbar.xml        # Non-blocking all-to-all
+│   ├── dragonfly.xml       # High-dimensional router network
+│   ├── fat_tree.xml        # Hierarchical tree topology
+│   ├── shared_backbone.xml # Single shared bus communication
+│   └── torus.xml           # 2D/3D Mesh/Torus
+├── src/
+│   ├── common/             # Shared utilities (Python)
+│   ├── problem1/           # Python Prefix Sum (Cluster Implementation)
+│   └── problem2/           # C++ Manual Reduce (SimGrid Simulation)
+└── README.md               # You are here
+```
+
+---
+
 ## 🏛️ Hybrid Architecture
 
 ### Problem 1: Parallel Prefix Sum (Python)
