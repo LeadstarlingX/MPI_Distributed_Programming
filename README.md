@@ -1,97 +1,93 @@
-# MPI Distributed Programming Assignment
+# MPI Hybrid Distributed Framework
 
-This project implements fundamental distributed algorithms using **Python** and **mpi4py**. It focuses on two core problems: Parallel Prefix Sum and a Manual Tree-based Reduction, emphasizing correct distributed logic, cluster compatibility, and performance analysis.
-
----
-
-## 🏛️ Project Architecture
-
-The project is structured for modularity and scalability:
-
-```text
-├── src/
-│   ├── common/         # Data generation and verification helpers
-│   ├── problem1/       # Parallel Prefix Sum implementation
-│   └── problem2/       # Manual Tree Reduce & Benchmarking
-├── Makefile            # Cluster-aware automation (Install, Run, Test)
-├── run_tests.sh        # CI/CD Smoke tests
-└── simgrid/            # Simulation configurations (XML)
-```
+This project contains a dual-layer implementation of distributed algorithms, combining physical cluster deployment (Python/mpi4py) with high-fidelity network simulation (C++/SimGrid).
 
 ---
 
-## 🔬 Implementation Details
+## 🏛️ Hybrid Architecture
 
-### Problem 1: Parallel Prefix Sum
-Computes the cumulative sum of a distributed vector using a highly efficient **3-step Parallel Scan** algorithm:
+### Problem 1: Parallel Prefix Sum (Python)
+*   **Platform**: University Cluster (CentOS 7.7).
+*   **Logic**: 3-step Parallel Scan (Local Sum -> Scatter/Gather Offsets -> Adjust).
+*   **Tech**: Python 3.6, `mpi4py`, `numpy`.
+*   **Goal**: Demonstrate real-world deployment and version compatibility.
 
-1.  **Local Scan (`np.cumsum`)**: Each process computes the prefix sum of its own data slice.
-2.  **Global Offset Calculation**: 
-    *   Processes `Gather` their individual total sums to Rank 0.
-    *   Rank 0 computes the cumulative offsets for each rank.
-    *   Offsets are `Scatter`ed back to each process.
-3.  **Local Adjustment**: Each process adds its assigned offset to its local prefix sum to achieve the global distributed result.
-
-### Problem 2: Manual Tree-based Reduce
-Replaces the standard `MPI_Reduce` with a custom implementation using a **Binary Tree Topology**:
-
-*   **Topology**: Nodes are mapped to a tree where rank $i$ has children $2i+1$ and $2i+2$.
-*   **Communication**: 
-    *   Leaf nodes send their data to their parents.
-    *   Intermediate nodes aggregate their local data with data received from children before forwarding to their parent.
-    *   The **Root (Rank 0)** performs the final aggregation.
-*   **Efficiency**: Reduces time complexity from $O(N)$ (linear) to $O(\log N)$ relative to the number of processes.
+### Problem 2: Tree-based Reduction (C++)
+*   **Platform**: Local Container (SimGrid 4.1 SMPI).
+*   **Logic**: Binary Tree Reduction ($O(\log N)$ communication).
+*   **Tech**: C++, `MPI (smpi)`, `Makefile`.
+*   **Goal**: Analyze performance across different network topologies (Fat-Tree, Dragonfly, etc.).
 
 ---
 
-## 🚀 Deployment on Cluster (CentOS 7.7)
+## 🔬 Experimental Results
 
-The project includes advanced support for legacy cluster environments:
+### 1. Problem 1 Verification (Cluster)
+*   **Status**: ✅ SUCCESS
+*   **Nodes**: 4 processes on 172.25.1.81.
+*   **Validation**: Parallel output matched sequential `np.cumsum` results.
 
-### Environment Compatibility
-*   **Python Legality**: Code is strictly compatible with Python 3.5+ (uses `.format()` instead of f-strings).
-*   **Path Management**: The `Makefile` automatically handles `PYTHONPATH` propagation to worker nodes via `mpiexec -genv`.
-*   **Dependency Locking**: `make install` forces `mpi4py==3.1.6` compilation from source to ensure binary compatibility with system MPI libraries.
+### 2. Problem 2: Comparative Reduction (Simulation)
+Comparing **Parallel Tree Reduce** vs **Sequential Gather Accumulation**.
+*Result for NP=4 (Nodes):*
 
-### Quick Start (Cluster)
-```bash
-# 1. Install dependencies (compiled for the cluster)
-make install
-
-# 2. Run Problem 1 (Correctness Test)
-make p1
-
-# 3. Run Problem 2 Benchmarks
-make p2
-
-# 4. Verify Problem 2 Logic explicitly
-make test_p2
-```
-
----
-
-## 📊 Experimental Results (4-Core Cluster)
-
-The following metrics were gathered on a university cluster using 4 distributed processes:
-
-### Problem 1 Verification
-*   **Status**: ✅ SUCCESS 
-*   **Logic**: Automatic comparison between parallel output and sequential `np.cumsum`.
-
-### Problem 2 Performance Benchmarking
-| Algorithm | Vector Size ($N$) | Seq Time (s) | Par Time (s) |
-| :--- | :--- | :--- | :--- |
-| **Tree-Reduce** | 1,000 | 0.000040 | 0.000248 |
-| **Tree-Reduce** | 10,000 | 0.000022 | 0.000385 |
-| **Tree-Reduce** | 100,000 | 0.000114 | 0.003544 |
-| **Tree-Reduce** | 1,000,000 | 0.000868 | 0.029818 |
+| Topology | Vector Size (N) | Tree Reduce (s) | Seq(Gather) (s) | Result |
+| :--- | :--- | :--- | :--- | :--- |
+| **Fat-Tree** | 10 | 0.001428 | 0.000816 | ✅ Valid |
+| **Fat-Tree** | 1,000 | 0.001476 | 0.000877 | ✅ Valid |
+| **Fat-Tree** | 1,000,000 | 0.138623 | 0.113750 | ✅ Valid |
+| **Dragonfly** | 10 | 0.001508 | 0.001016 | ✅ Valid |
+| **Dragonfly** | 1,000 | 0.001566 | 0.001031 | ✅ Valid |
+| **Dragonfly** | 1,000,000 | 0.136611 | 0.115901 | ✅ Valid |
 
 > [!NOTE]
-> Parallel overhead (communication latency) is significant for smaller sizes. The efficiency gains of the Tree-Reduce algorithm become more apparent as $N$ scales or when the number of processes increases significantly.
+> **Performance Insight**: With a low node count (NP=4), the Sequential (Gather) approach is slightly faster than the Tree approach due to lower communication overhead. The Tree algorithm's $O(\log N)$ scaling advantage becomes significantly more apparent as the process count (NP) increases into the dozens or hundreds.
 
 ---
 
-## 🛠️ Software Engineering Standards
-*   **Git Workflow**: Developed using feature branches (`feat/...`) with atomic commits.
-*   **Multi-Remote**: Configured for both **GitHub** (CI) and **University GitLab** (Clean submission).
-*   **CI/CD**: Integrated with GitHub Actions for automated sanity checks on every push.
+## 🛠️ SimGrid Performance & Calibration
+
+To ensure the simulation timings are scientifically valid, we use **Host-Speed Calibration**.
+
+### What is Host-Speed?
+SimGrid translates the physical execution time on your laptop into a "simulated time" based on the platform's CPU power. We run a calibration benchmark once to determine the laptop's Gflop rate.
+
+### Optimization
+In the provided `Makefile`, the `bench_all` target performs **One-Time Calibration**:
+1.  **Detect**: It runs a single-process simulation with `host-speed:auto` to measure the laptop's power.
+2.  **Propagate**: It captures the result (e.g., `6.43Gf`) and injects it into all subsequent benchmarks for the remainder of the session.
+*   **Benefits**: 
+    1.  **Deterministic Results**: Ensures all comparison tests (Fat-Tree vs Dragonfly) use the exact same CPU baseline.
+    2.  **Accuracy**: Automatically adapts to your laptop's current state (thermal throttling, background load) at the moment the test begins.
+    3.  **Speed**: Only pays the "calibration tax" (2.5s) once, rather than on every run.
+
+---
+
+## 🚀 How to Run
+
+### Problem 1 (Cluster)
+*Prerequisite: Accessible MPI cluster with Python 3.6.*
+```bash
+make install  # Build mpi4py from source for compatibility
+make p1       # Run Prefix Sum
+```
+
+### Problem 2 (Simulation)
+*Prerequisite: Docker image `simgrid/tuto-smpi`.*
+```powershell
+# Start container
+docker run -it --rm -v "${PWD}:/source" -w /source simgrid/tuto-smpi bash
+
+# Inside container:
+make bench_all NP=8 N=1000000
+```
+> [!NOTE]
+> **NP Variable**: The number of processes defaults to **4** but can be overridden as shown above.
+
+---
+
+## ✅ Delivery Status
+- [x] Python Prefix Sum (Correctness Verified on Cluster).
+- [x] C++ Tree Reduce (Correctness Verified in Simulation).
+- [x] Multi-Topology XML Infrastructure.
+- [x] Final Comparative Performance Report.
